@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Simple Memo App</title>
+</head>
+<body>
+<h1>Simple Memo App</h1>
+
+<input id="memoInput" placeholder="insert your memo">
+<button onclick="addMemo()">add</button>
+
+<ul id="memoList"></ul>
+
+<script>
+    async function loadMemos(){
+        const response = await fetch('/api/memos');
+        const memos = await response.json();
+
+        const list = document.getElementById('memoList');
+        list.innerHTML = '';
+
+        memos.forEach(memo => {
+            const li = document.createElement('li');
+            li.textContent = memo.content;
+            list.appendChild(li);
+        })
+    }
+
+    async function addMemo() {
+        const input = document.getElementById('memoInput');
+
+        await fetch('/api/memos', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ content: input.value })
+        });
+
+        input.value = '';
+        loadMemos();
+    }
+    loadMemos();
+
+</script>
+
+</body>
+</html>
