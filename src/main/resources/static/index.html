@@ -1,19 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>Simple Memo App</title>
+    <title>Memo App</title>
 </head>
 <body>
-<h1>Simple Memo App</h1>
+<h1>Memo App</h1>
 
 <input id="memoInput" placeholder="insert your memo">
-<button onclick="addMemo()">add</button>
+<button onclick="addMemo()">Add</button>
 
 <ul id="memoList"></ul>
 
 <script>
-    async function loadMemos(){
+    async function loadMemos() {
         const response = await fetch('/api/memos');
         const memos = await response.json();
 
@@ -22,13 +22,32 @@
 
         memos.forEach(memo => {
             const li = document.createElement('li');
-            li.textContent = memo.content;
+
+            const text = document.createElement('span');
+            text.textContent = memo.content + ' ';
+
+            const editButton = document.createElement('button');
+            editButton.textContent = 'Edit';
+            editButton.onclick = () => updateMemo(memo.id);
+
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Delete';
+            deleteButton.onclick = () => deleteMemo(memo.id);
+
+            li.appendChild(text);
+            li.appendChild(editButton);
+            li.appendChild(deleteButton);
+
             list.appendChild(li);
-        })
+        });
     }
 
     async function addMemo() {
         const input = document.getElementById('memoInput');
+
+        if (input.value.trim() === '') {
+            return;
+        }
 
         await fetch('/api/memos', {
             method: 'POST',
@@ -41,9 +60,34 @@
         input.value = '';
         loadMemos();
     }
+
+    async function updateMemo(id) {
+        const newContent = prompt('새 메모 내용을 입력하세요');
+
+        if (newContent === null || newContent.trim() === '') {
+            return;
+        }
+
+        await fetch('/api/memos/' + id, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ content: newContent })
+        });
+
+        loadMemos();
+    }
+
+    async function deleteMemo(id) {
+        await fetch('/api/memos/' + id, {
+            method: 'DELETE'
+        });
+
+        loadMemos();
+    }
+
     loadMemos();
-
 </script>
-
 </body>
 </html>
